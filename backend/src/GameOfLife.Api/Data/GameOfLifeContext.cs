@@ -5,6 +5,10 @@ namespace GameOfLife.Api.Data;
 
 public class GameOfLifeContext : DbContext
 {
+    public GameOfLifeContext(DbContextOptions<GameOfLifeContext> options)
+    : base(options)
+    { }
+
     public DbSet<Game>? Games { get; set; }
     public DbSet<Board>? Boards { get; set; }
 

@@ -1,32 +1,49 @@
 services:
   gameoflife-api:
     container_name: gameoflife-api
+    networks:
+      - gameoflife_network
     build:
       context: .
       dockerfile: Dockerfile
     image: gameoflife-api:1.0.0
     ports:
-      - 8080:8080
+      - "${PORT}:${PORT}"
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      PORT: ${PORT}
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
     depends_on:
-      db: 
+      db:
         condition: service_healthy
         restart: true
   db:
     image: postgres
     container_name: gameoflife-db
+    networks:
+      - gameoflife_network
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: 123
-      POSTGRES_DB: gameoflife
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 10s
       timeout: 10s
       retries: 5
       start_period: 30s
+
+networks:
+  gameoflife_network:
+    driver: bridge
+
 volumes:
   pgdata:
