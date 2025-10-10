@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GameOfLife.Api.Migrations
 {
     [DbContext(typeof(GameOfLifeContext))]
-    [Migration("20251010202807_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20251010231917_InitialMigration")]
+    partial class InitialMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -31,18 +31,12 @@ namespace GameOfLife.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Cols")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Grid")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("Rows")
-                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -70,7 +64,7 @@ namespace GameOfLife.Api.Migrations
                     b.HasIndex("BoardId", "GenerationNumber")
                         .IsUnique();
 
-                    b.ToTable("Games");
+                    b.ToTable("Generations");
                 });
 
             modelBuilder.Entity("GameOfLife.Api.Models.Generation", b =>

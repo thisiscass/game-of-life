@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace GameOfLife.Api.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialCreate : Migration
+    public partial class InitialMigration : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -17,8 +17,6 @@ namespace GameOfLife.Api.Migrations
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     Grid = table.Column<string>(type: "text", nullable: false),
-                    Rows = table.Column<int>(type: "integer", nullable: false),
-                    Cols = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
@@ -27,7 +25,7 @@ namespace GameOfLife.Api.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Games",
+                name: "Generations",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -37,9 +35,9 @@ namespace GameOfLife.Api.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Games", x => x.Id);
+                    table.PrimaryKey("PK_Generations", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Games_Boards_BoardId",
+                        name: "FK_Generations_Boards_BoardId",
                         column: x => x.BoardId,
                         principalTable: "Boards",
                         principalColumn: "Id",
@@ -47,8 +45,8 @@ namespace GameOfLife.Api.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Games_BoardId_GenerationNumber",
-                table: "Games",
+                name: "IX_Generations_BoardId_GenerationNumber",
+                table: "Generations",
                 columns: new[] { "BoardId", "GenerationNumber" },
                 unique: true);
         }
@@ -57,7 +55,7 @@ namespace GameOfLife.Api.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "Games");
+                name: "Generations");
 
             migrationBuilder.DropTable(
                 name: "Boards");

@@ -10,7 +10,7 @@ public class GameOfLifeContext : DbContext
     { }
 
     public DbSet<Board>? Boards { get; set; }
-    public DbSet<Generation>? Games { get; set; }
+    public DbSet<Generation>? Generations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

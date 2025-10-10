@@ -28,18 +28,12 @@ namespace GameOfLife.Api.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int>("Cols")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Grid")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("Rows")
-                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
@@ -67,7 +61,7 @@ namespace GameOfLife.Api.Migrations
                     b.HasIndex("BoardId", "GenerationNumber")
                         .IsUnique();
 
-                    b.ToTable("Games");
+                    b.ToTable("Generations");
                 });
 
             modelBuilder.Entity("GameOfLife.Api.Models.Generation", b =>

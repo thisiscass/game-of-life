@@ -1,3 +1,4 @@
+using GameOfLife.Api.Services;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,6 +8,11 @@ namespace GameOfLife.APi.Controllers;
 [Route("api/grid")]
 public class GameOfLifeController
 {
+    private readonly IGameOfLifeService _gameOfLifeService;
+    public GameOfLifeController(IGameOfLifeService gameOfLifeService)
+    {
+        _gameOfLifeService = gameOfLifeService;
+    }
     [HttpPost]
     public Results<
         Created<PostResult>, 
