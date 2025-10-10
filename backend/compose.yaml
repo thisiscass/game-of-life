@@ -1,0 +1,32 @@
+services:
+  gameoflife-api:
+    container_name: gameoflife-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gameoflife-api:1.0.0
+    ports:
+      - 8080:8080
+    depends_on:
+      db: 
+        condition: service_healthy
+        restart: true
+  db:
+    image: postgres
+    container_name: gameoflife-db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: 123
+      POSTGRES_DB: gameoflife
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+volumes:
+  pgdata:
