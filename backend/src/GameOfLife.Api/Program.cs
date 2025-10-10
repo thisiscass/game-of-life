@@ -44,8 +44,7 @@ builder.Services.AddHealthChecks()
 
 var app = builder.Build();
 
-var logger = app.Services.GetRequiredService<ILogger<Program>>();
-logger.LogInformation("🚀 Game of Life API is starting up...");
+app.Logger.LogInformation("🚀 Game of Life API is starting up...");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -58,7 +57,7 @@ var lifetime = app.Lifetime;
 
 lifetime.ApplicationStarted.Register(() =>
 {
-    logger.LogInformation("✅ Game of Life API is now running in {EnvironmentName}...", app.Environment.EnvironmentName);
+    app.Logger.LogInformation("✅ Game of Life API is now running in {EnvironmentName}...", app.Environment.EnvironmentName);
 });
 
 app.UseHttpsRedirection();
