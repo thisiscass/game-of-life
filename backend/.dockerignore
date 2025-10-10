@@ -1,0 +1,7 @@
+bin/
+obj/
+.git/
+.vscode/
+Dockerfile
+compose.yaml
+tests/
