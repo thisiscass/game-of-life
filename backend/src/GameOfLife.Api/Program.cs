@@ -5,6 +5,11 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Setting up log
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
 // Add appsettings.json and environment variables
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -39,12 +44,22 @@ builder.Services.AddHealthChecks()
 
 var app = builder.Build();
 
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+logger.LogInformation("🚀 Game of Life API is starting up...");
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+var lifetime = app.Lifetime;
+
+lifetime.ApplicationStarted.Register(() =>
+{
+    logger.LogInformation("✅ Game of Life API is now running in {EnvironmentName}...", app.Environment.EnvironmentName);
+});
 
 app.UseHttpsRedirection();
 
