@@ -9,15 +9,22 @@ public class GameOfLifeContext : DbContext
     : base(options)
     { }
 
-    public DbSet<Game>? Games { get; set; }
     public DbSet<Board>? Boards { get; set; }
+    public DbSet<Generation>? Games { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<Game>()
-            .HasKey(g => g.Id);
+        modelBuilder.Entity<Board>()
+            .HasKey(b => b.Id);
 
         modelBuilder.Entity<Board>()
-            .HasKey(b => new { b.Id, b.Generation });
+            .HasMany(b => b.Generations)
+            .WithOne(g => g.Board)
+            .HasForeignKey(g => g.BoardId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Generation>()
+            .HasIndex(g => new { g.BoardId, g.GenerationNumber })
+            .IsUnique();
     }
 }
