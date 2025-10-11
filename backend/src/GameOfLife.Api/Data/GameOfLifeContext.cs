@@ -10,7 +10,6 @@ public class GameOfLifeContext : DbContext
     { }
 
     public DbSet<Board>? Boards { get; set; }
-    public DbSet<Generation>? Generations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -18,13 +17,7 @@ public class GameOfLifeContext : DbContext
             .HasKey(b => b.Id);
 
         modelBuilder.Entity<Board>()
-            .HasMany(b => b.Generations)
-            .WithOne(g => g.Board)
-            .HasForeignKey(g => g.BoardId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<Generation>()
-            .HasIndex(g => new { g.BoardId, g.GenerationNumber })
+            .HasIndex(g => new { g.Id, g.Generation })
             .IsUnique();
     }
 }

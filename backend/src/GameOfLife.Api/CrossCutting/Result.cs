@@ -1,4 +1,4 @@
-namespace GameOfLife.Api.CrossCutting;
+namespace GameOfLife.CrossCutting.Result;
 
 public abstract class Result<T> { }
 

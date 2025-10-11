@@ -5,7 +5,7 @@ public class Validator<T>
     private List<(Func<T, bool> func, string message)> _rules = new();
     private List<string> _errors = new();
 
-    public bool IsValid => !_rules.Any();
+    public bool IsValid => !_errors.Any();
 
     protected void AddRule(Func<T, bool> func, string message = "")
     {

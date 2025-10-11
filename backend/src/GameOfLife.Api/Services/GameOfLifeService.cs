@@ -1,4 +1,4 @@
-using GameOfLife.Api.CrossCutting;
+using GameOfLife.CrossCutting.Result;
 using GameOfLife.Api.Data;
 using GameOfLife.Api.Dtos;
 using GameOfLife.Api.Models;
@@ -32,7 +32,7 @@ public class GameOfLifeService : IGameOfLifeService
 
         try
         {
-            var grid = Board.TransformGrid(boardDto.Grid);
+            var grid = Board.SerializeGrid(boardDto.Grid);
 
             var newBoard = new Board(Guid.NewGuid(), grid, _clockService.CurrentUtc);
 
@@ -49,12 +49,27 @@ public class GameOfLifeService : IGameOfLifeService
         }
     }
 
-    public Task<Result<Board>> GetAfterNSteps(int n)
+    public async Task<Result<NextBoardResultDto>> GetNextGeneration(Guid boardId)
     {
-        throw new NotImplementedException();
+        var currentBoard = await _context.Boards!.FindAsync(boardId);
+
+        if (currentBoard == null) 
+            return new Fail<NextBoardResultDto>(new List<string> { "Invalid board" });
+
+        var grid = Board.DeserializeGrid(currentBoard.Grid);
+
+        var nextBoard = Board.BuildNextGeneration(grid);
+        currentBoard.Grid = Board.SerializeGrid(nextBoard);
+        currentBoard.LatestUpdateAt = _clockService.CurrentUtc;
+        currentBoard.Generation += 1;
+
+        _context.Boards.Update(currentBoard);
+        await _context.SaveChangesAsync();
+
+        return new Success<NextBoardResultDto>(new NextBoardResultDto(currentBoard.Id, currentBoard.Generation, nextBoard));
     }
 
-    public Task<Result<Board>> GetNextGeneration(Guid boardId)
+    public Task<Result<Board>> GetAfterNSteps(int n)
     {
         throw new NotImplementedException();
     }

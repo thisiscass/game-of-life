@@ -1,5 +1,9 @@
 using System.Text.Json;
 using GameOfLife.Api.Data;
+using GameOfLife.Api.Dtos;
+using GameOfLife.Api.Services;
+using GameOfLife.Api.Validations;
+using GameOfLife.CrossCutting.Extensions;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 
@@ -42,16 +46,17 @@ builder.Services.AddHealthChecks()
         tags: new[] { "ready" }
     );
 
+builder.Services.AddGameOfLifeServices();
+
 var app = builder.Build();
 
 app.Logger.LogInformation("🚀 Game of Life API is starting up...");
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
+
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+
 
 var lifetime = app.Lifetime;
 

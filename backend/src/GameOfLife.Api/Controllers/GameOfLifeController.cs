@@ -1,11 +1,16 @@
+using System.Net;
+using GameOfLife.Api.Dtos;
 using GameOfLife.Api.Services;
+using GameOfLife.CrossCutting.Result;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GameOfLife.APi.Controllers;
 
+public record NextGenerationResult(Guid boardId);
+
 [ApiController]
-[Route("api/grid")]
+[Route("api/board")]
 public class GameOfLifeController
 {
     private readonly IGameOfLifeService _gameOfLifeService;
@@ -13,23 +18,38 @@ public class GameOfLifeController
     {
         _gameOfLifeService = gameOfLifeService;
     }
+
     [HttpPost]
-    public Results<
-        Created<PostResult>, 
-        BadRequest<string>
-        > Post(Grid grid)
+    [ProducesResponseType(typeof(CreateBoardResultDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(Fail<Guid>), StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(typeof(ProblemHttpResult), StatusCodes.Status500InternalServerError)]
+    public async Task<Results<
+        Created<CreateBoardResultDto>,
+        BadRequest<Fail<Guid>>,
+        ProblemHttpResult
+        >> Post(CreateBoardDto board)
     {
-        return TypedResults.Created(string.Empty, new PostResult(Guid.Empty));
+        var result = await _gameOfLifeService.Create(board);
+
+        if (result is Success<Guid> suc) return TypedResults.Created(nameof(Get), new CreateBoardResultDto(suc.Data));
+
+        if (result is Fail<Guid> fail) return TypedResults.BadRequest(fail);
+
+        var error = (InternalError<Guid>)result;
+
+        return TypedResults.Problem(statusCode: (int)HttpStatusCode.InternalServerError, detail: error.Error);
     }
 
     [HttpGet("{id}/next")]
-    public Results<
-        Ok<Grid>,
+    public async Task<Results<
+        Ok<Result<NextBoardResultDto>>,
         BadRequest<string>
-        > Get(Guid id)
+        >> Get(Guid id)
     {
         // Generate next generation grid logic
-        return TypedResults.Ok(new Grid());
+        var result = await _gameOfLifeService.GetNextGeneration(id);
+
+        return TypedResults.Ok(result);
     }
 
     [HttpGet("{id}/advance/{steps}")]
@@ -42,11 +62,11 @@ public class GameOfLifeController
         return TypedResults.Ok(new Grid());
     }
 
-     [HttpGet("{id}/final")]
+    [HttpGet("{id}/final")]
     public Results<
-        Ok<Grid>,
-        BadRequest<string>
-        > Final(Guid id, int steps)
+       Ok<Grid>,
+       BadRequest<string>
+       > Final(Guid id, int steps)
     {
         // Generate next generation grid logic
         return TypedResults.Ok(new Grid());
