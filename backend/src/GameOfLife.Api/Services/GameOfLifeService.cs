@@ -17,6 +17,7 @@ public class GameOfLifeService : IGameOfLifeService
     private readonly IClockService _clockService;
     private readonly BoardCache _boardCache;
     private readonly IHubContext<BoardHub> _hubContext;
+    private readonly IAdvanceNStepsQueue _advanceNStepsQueue;
 
     public GameOfLifeService(
         ICreateBoardValidation<CreateBoardDto> validation,
@@ -24,7 +25,8 @@ public class GameOfLifeService : IGameOfLifeService
         ILogger<GameOfLifeService> logger,
         IClockService clockService,
         BoardCache boardCache,
-        IHubContext<BoardHub> hubContext)
+        IHubContext<BoardHub> hubContext,
+        IAdvanceNStepsQueue advanceNStepsQueue)
     {
         _validation = validation;
         _context = context;
@@ -32,8 +34,9 @@ public class GameOfLifeService : IGameOfLifeService
         _clockService = clockService;
         _boardCache = boardCache;
         _hubContext = hubContext;
-
+        _advanceNStepsQueue = advanceNStepsQueue;
     }
+
     public async Task<Result<Guid>> Create(CreateBoardDto boardDto, CancellationToken cancellationToken)
     {
         var validation = _validation.PerformValidation(boardDto);
@@ -78,9 +81,19 @@ public class GameOfLifeService : IGameOfLifeService
         return new Success<NextBoardResultDto>(new NextBoardResultDto(currentBoard.Id, currentBoard.Generation, nextBoard));
     }
 
-    public Task<Result> Advance(Guid boardId, int steps, CancellationToken cancellationToken)
+    public async Task<Result> Advance(Guid boardId, int steps, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        if (steps < 1)
+            return new Fail(new List<string> { "Invalid steps." });
+            
+        var board = await _context.Boards.FindAsync(boardId);
+
+        if (board == null)
+            return new Fail(new List<string> { "Invalid board." });
+
+        await _advanceNStepsQueue.EnqueueAsync(new AdvanceRequest(board.Id, steps), cancellationToken);
+
+        return new Success();
     }
 
     public async Task<Result> Start(Guid boardId, CancellationToken cancellationToken)

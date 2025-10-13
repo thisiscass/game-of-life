@@ -18,20 +18,18 @@ public class Success<T> : Result<T>
 
 public class Fail : Result
 {
-    public List<string> Errors { get; private set; }
-    public Fail(List<string> errors)
-    {
-        Errors = errors;
-    }
+    public List<string> Errors { get; private set; } = new();
+    public Fail(List<string> errors) => Errors = errors;
+
+    public Fail(string error) => Errors.Add(error);
 }
 
 public class Fail<T> : Result<T>
 {
-    public List<string> Errors { get; private set; }
-    public Fail(List<string> errors)
-    {
-        Errors = errors;
-    }
+    public List<string> Errors { get; private set; } = new();
+    public Fail(List<string> errors) => Errors = errors;
+    public Fail(string error) => Errors.Add(error);
+
 }
 
 public class InternalError<T> : Result<T>

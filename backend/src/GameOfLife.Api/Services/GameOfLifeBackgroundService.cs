@@ -23,7 +23,6 @@ public class GameOfLifeBackgroundService : BackgroundService
         _cache = cache;
         _hub = hub;
         _logger = logger;
-        Console.WriteLine(">>> GameOfLifeBackgroundService constructed");
     }
 
     public override async Task StartAsync(CancellationToken cancellationToken)
@@ -46,9 +45,9 @@ public class GameOfLifeBackgroundService : BackgroundService
         _logger.LogInformation(">>> GameOfLifeBackgroundService is running...");
     }
 
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        while (!stoppingToken.IsCancellationRequested)
+        while (!cancellationToken.IsCancellationRequested)
         {
             try
             {
@@ -64,17 +63,17 @@ public class GameOfLifeBackgroundService : BackgroundService
 
                     var payload = new { boardId = board.Id, grid = next, generation = board.Generation };
                     await _hub.Clients.Group($"board-{board.Id}")
-                        .SendAsync("UpdateBoard", payload, stoppingToken);
+                        .SendAsync("UpdateBoard", payload, cancellationToken);
 
-                    _logger.LogInformation(">>> UpdateBoard @{payload}", payload);
+                    _logger.LogInformation(">>> UpdateBoard sent @{payload}", payload);
                 }
 
-                await Task.Delay(1000, stoppingToken);
+                await Task.Delay(1000, cancellationToken);
             }
             catch (Exception ex)
             {
-                _logger.LogError($"[GameOfLifeBackgroundService] Error: {ex.InnerException?.Message}", ex);
-                await Task.Delay(3000, stoppingToken);
+                _logger.LogError(ex, $"[GameOfLifeBackgroundService] Error: {ex.InnerException?.Message}");
+                await Task.Delay(3000, cancellationToken);
             }
 
         }
