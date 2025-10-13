@@ -60,4 +60,15 @@ public class GameOfLifeController
 
         return result.ToAcceptResult();
     }
+
+    [HttpGet("{id}/stop")]
+    public async Task<Results<
+        Accepted,
+        BadRequest<Fail>
+        >> Stop(Guid id, CancellationToken cancellationToken = default)
+    {
+        var result = await _gameOfLifeService.Stop(id, cancellationToken);
+
+        return result.ToAcceptResult();
+    }
 }

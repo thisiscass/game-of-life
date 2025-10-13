@@ -25,11 +25,16 @@ public class Board
         IsRunning = true;
     }
 
+    public void Stop()
+    {
+        IsRunning = false;
+    }
+
     public void NextGeneration(DateTime updatedAt)
     {
         var grid = DeserializeGrid(Grid);
         var nextGrid = BuildNextGeneration(grid);
-        
+
         Grid = SerializeGrid(nextGrid);
         LatestUpdateAt = updatedAt;
         Generation += 1;

@@ -103,11 +103,26 @@ public class GameOfLifeService : IGameOfLifeService
     {
         var runningBoards = _context.Boards!.Where(b => b.IsRunning);
         foreach (var board in runningBoards)
-            board.IsRunning = false;
+            board.Stop();
 
         await _context.SaveChangesAsync(cancellationToken);
 
         _boardCache.Clear();
+
+        return new Success();
+    }
+
+    public async Task<CrossCutting.Result.IResult> Stop(Guid boardId, CancellationToken cancellationToken)
+    {
+        var board = await _context.Boards.FindAsync(boardId);
+
+        if (board == null || !board.IsRunning) 
+            return new Fail(new List<string> { "Invalid board" });
+
+        _boardCache.TryRemoveBoard(boardId, out _);
+        board.Stop();
+        
+        await _context.SaveChangesAsync(cancellationToken);
 
         return new Success();
     }
