@@ -78,8 +78,7 @@ public class GameOfLifeService : IGameOfLifeService
 
         var board = await _context.Boards.FindAsync(boardId);
 
-        if (board == null)
-            return new Fail(new List<string> { "Invalid board." });
+        if (board == null || board.IsRunning) return new Fail(new List<string> { "Invalid board" });
 
         await _advanceNStepsQueue.EnqueueAsync(new AdvanceRequest(board.Id, steps), cancellationToken);
 

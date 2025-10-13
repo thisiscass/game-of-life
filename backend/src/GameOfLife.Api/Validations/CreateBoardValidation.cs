@@ -7,11 +7,15 @@ public interface ICreateBoardValidation<T>
     public CreateBoardValidation PerformValidation(T obj);
 }
 
-public class CreateBoardValidation : Validator<CreateBoardDto>, ICreateBoardValidation<CreateBoardDto>
+public sealed class CreateBoardValidation : Validator<CreateBoardDto>, ICreateBoardValidation<CreateBoardDto>
 {
     public CreateBoardValidation()
     {
-        AddRule((dto) => dto.Grid.Length > 0, "Invalid grid");
+        AddRule(dto =>
+        {
+            if (dto.Grid == null) return false;
+            return dto.Grid.All(row => row != null && row.All(cell => cell == 0 || cell == 1));
+        });
     }
 
     public CreateBoardValidation PerformValidation(CreateBoardDto obj)
