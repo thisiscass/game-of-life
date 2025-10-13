@@ -7,9 +7,14 @@ public record AdvanceRequest(Guid BoardId, int Steps);
 public class AdvanceNStepsQueue : IAdvanceNStepsQueue
 {
     private readonly Channel<AdvanceRequest> _channel;
+    private readonly ILogger<AdvanceNStepsQueue> _logger;
 
-    public AdvanceNStepsQueue(int capacity = 100)
+    public AdvanceNStepsQueue(
+        ILogger<AdvanceNStepsQueue> logger,
+        int capacity = 100)
     {
+        _logger = logger;
+
         var options = new BoundedChannelOptions(capacity)
         {
             SingleReader = true,
@@ -21,12 +26,27 @@ public class AdvanceNStepsQueue : IAdvanceNStepsQueue
 
     public async ValueTask EnqueueAsync(AdvanceRequest data, CancellationToken cancellationToken = default)
     {
-        await _channel.Writer.WriteAsync(data, cancellationToken);
+        try
+        {
+            await _channel.Writer.WriteAsync(data, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[AdvanceNStepsQueue] Error to enqueue data: @{data}.", data);
+        }
     }
 
     public async ValueTask<AdvanceRequest> DequeueAsync(CancellationToken ct)
     {
-        var data = await _channel.Reader.ReadAsync(ct);
-        return data;
+        try
+        {
+            var data = await _channel.Reader.ReadAsync(ct);
+            return data;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[AdvanceNStepsQueue] Error to dequeue.");
+            throw;
+        }
     }
 }

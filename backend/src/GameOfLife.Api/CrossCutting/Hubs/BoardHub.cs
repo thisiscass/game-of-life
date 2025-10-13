@@ -1,42 +1,27 @@
-using GameOfLife.Api.Data;
-using GameOfLife.Api.Models;
-using GameOfLife.CrossCutting.Cache;
 using Microsoft.AspNetCore.SignalR;
 
 namespace GameOfLife.CrossCutting.Hubs;
 
 public class BoardHub : Hub
 {
-    private readonly IServiceScopeFactory _scopeFactory;
-    private readonly BoardCache _cache;
+    private readonly ILogger<BoardHub> _logger;
 
-    public BoardHub(IServiceScopeFactory scopeFactory, BoardCache cache)
+    public BoardHub(ILogger<BoardHub> logger)
     {
-        _scopeFactory = scopeFactory;
-        _cache = cache;
+        _logger = logger;
     }
-
     public override Task OnConnectedAsync()
     {
-        Console.WriteLine($"Client connected: {Context.ConnectionId}");
+        _logger.LogInformation($"Client connected: {Context.ConnectionId}");
         return base.OnConnectedAsync();
     }
 
     public override async Task OnDisconnectedAsync(Exception? exception)
     {
-        Console.WriteLine($"Client disconnected: {Context.ConnectionId}");
+        _logger.LogInformation($"Client disconnected: {Context.ConnectionId}");
         await base.OnDisconnectedAsync(exception);
     }
 
-    // Client joins a board room
-    // public async Task JoinBoard(string boardId, CancellationToken cancellationToken = default)
-    // {
-    //     await Groups.AddToGroupAsync(Context.ConnectionId, boardId);
-    //     Console.WriteLine($"Client {Context.ConnectionId} joined board {boardId}");
-    //     await Clients.Caller.SendAsync("JoinedBoard", boardId, cancellationToken);
-    // }
-
-    // Client leaves a board room
     public async Task StopBoard(string boardId, CancellationToken cancellationToken = default)
     {
         await Groups.RemoveFromGroupAsync(Context.ConnectionId, boardId);

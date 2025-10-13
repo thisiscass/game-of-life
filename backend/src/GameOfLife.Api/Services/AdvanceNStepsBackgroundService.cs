@@ -23,6 +23,14 @@ public class AdvanceNStepsBackgroundService : BackgroundService
         _advanceNStepsService = advanceNStepsService;
     }
 
+    public override async Task StartAsync(CancellationToken cancellationToken)
+    {
+        await base.StartAsync(cancellationToken);
+
+        _logger.LogInformation(">>> AdvanceNStepsBackgroundService is running...");
+    }
+
+
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         while (!cancellationToken.IsCancellationRequested)
@@ -31,18 +39,24 @@ public class AdvanceNStepsBackgroundService : BackgroundService
             try
             {
                 request = await _queue.DequeueAsync(cancellationToken);
+
                 _logger.LogInformation("[AdvanceNStepsBackgroundService] Handling board @{request}", request);
             }
             catch (OperationCanceledException)
             {
                 break;
             }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error dequeuing request");
+                continue;
+            }
 
             try
             {
                 var result =
                     await _advanceNStepsService.GetFinalResultOrFail(
-                        request.BoardId,
+                        request!.BoardId,
                         request.Steps,
                         cancellationToken);
 

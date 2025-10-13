@@ -9,16 +9,18 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddGameOfLifeServices(this IServiceCollection services)
     {
-        services.AddScoped<IGameOfLifeService, GameOfLifeService>();
         services.AddScoped<ICreateBoardValidation<CreateBoardDto>, CreateBoardValidation>();
+
+        services.AddScoped<IGameOfLifeService, GameOfLifeService>();
         services.AddSingleton<IClockService, ClockService>();
+        services.AddSingleton<IBoardLockService, BoardLockService>();
+        services.AddSingleton<IAdvanceNStepsService, AdvanceNStepsService>();
         services.AddSingleton<BoardCache>();
 
         services.AddHostedService<GameOfLifeBackgroundService>();
         services.AddHostedService<AdvanceNStepsBackgroundService>();
 
         services.AddSingleton<IAdvanceNStepsQueue, AdvanceNStepsQueue>();
-        services.AddSingleton<IBoardLockService, BoardLockService>();
 
         return services;
     }

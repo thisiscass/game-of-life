@@ -18,9 +18,6 @@ public class GameOfLifeController
     }
 
     [HttpPost]
-    [ProducesResponseType(typeof(CreateBoardResultDto), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(Fail<Guid>), StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(typeof(ProblemHttpResult), StatusCodes.Status500InternalServerError)]
     public async Task<Results<
         Created<CreateBoardResultDto>,
         BadRequest<Fail<Guid>>,

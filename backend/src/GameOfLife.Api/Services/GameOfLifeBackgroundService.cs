@@ -72,7 +72,7 @@ public class GameOfLifeBackgroundService : BackgroundService
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"[GameOfLifeBackgroundService] Error: {ex.InnerException?.Message}");
+                _logger.LogError(ex, $"[GameOfLifeBackgroundService] Error: {ex.GetBaseException().Message}");
                 await Task.Delay(3000, cancellationToken);
             }
 

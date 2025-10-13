@@ -25,7 +25,7 @@ public class AdvanceNStepsService : IAdvanceNStepsService
 
     private bool IsEmptyGrid(string grid)
     {
-        return grid.All(g => !g.Equals("1"));
+        return !grid.Contains('1');
     }
 
     public async Task<Result<Board>> GetFinalResultOrFail(
@@ -79,6 +79,8 @@ public class AdvanceNStepsService : IAdvanceNStepsService
         {
             board.Grid = currentSerialized;
             board.Generation = currentGeneration;
+            board.LatestUpdateAt = _clockService.CurrentUtc;
+            
             await _context.SaveChangesAsync(cancellationToken);
             return new Success<Board>(board);
         }
