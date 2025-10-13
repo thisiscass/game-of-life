@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+
 namespace GameOfLife.Api.Models;
 
 public class Board
@@ -18,6 +20,20 @@ public class Board
     public int Generation { get; set; } = 0;
     public bool IsRunning { get; set; } = false;
 
+    public void Start()
+    {
+        IsRunning = true;
+    }
+
+    public void NextGeneration(DateTime updatedAt)
+    {
+        var grid = DeserializeGrid(Grid);
+        var nextGrid = BuildNextGeneration(grid);
+        
+        Grid = SerializeGrid(nextGrid);
+        LatestUpdateAt = updatedAt;
+        Generation += 1;
+    }
 
     public static string SerializeGrid(int[][] grid)
     {

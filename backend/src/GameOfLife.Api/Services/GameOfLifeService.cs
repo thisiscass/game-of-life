@@ -37,55 +37,45 @@ public class GameOfLifeService : IGameOfLifeService
         _advanceNStepsQueue = advanceNStepsQueue;
     }
 
-    public async Task<Result<Guid>> Create(CreateBoardDto boardDto, CancellationToken cancellationToken)
+    public async Task<IResult<CreateBoardResultDto>> Create(CreateBoardDto boardDto, CancellationToken cancellationToken)
     {
         var validation = _validation.PerformValidation(boardDto);
-        if (!validation.IsValid) return new Fail<Guid>(validation.GetErrors());
+        if (!validation.IsValid) return new Fail<CreateBoardResultDto>(validation.GetErrors());
 
-        try
-        {
-            var grid = Board.SerializeGrid(boardDto.Grid);
+        var grid = Board.SerializeGrid(boardDto.Grid);
 
-            var newBoard = new Board(Guid.NewGuid(), grid, _clockService.CurrentUtc);
+        var newBoard = new Board(Guid.NewGuid(), grid, _clockService.CurrentUtc);
 
-            _context.Boards!.Add(newBoard);
-            await _context.SaveChangesAsync();
+        _context.Boards!.Add(newBoard);
+        await _context.SaveChangesAsync();
 
-            return new Success<Guid>(newBoard.Id);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, ex.Message);
+        return new Success<CreateBoardResultDto>(new CreateBoardResultDto(newBoard.Id));
 
-            return new InternalError<Guid>(ex.Message);
-        }
     }
 
-    public async Task<Result<NextBoardResultDto>> GetNextGeneration(Guid boardId, CancellationToken cancellationToken)
+    public async Task<IResult<NextBoardResultDto>> GetNextGeneration(Guid boardId, CancellationToken cancellationToken)
     {
         var currentBoard = await _context.Boards.FindAsync(boardId);
 
-        if (currentBoard == null) 
+        if (currentBoard == null)
             return new Fail<NextBoardResultDto>(new List<string> { "Invalid board" });
 
-        var grid = Board.DeserializeGrid(currentBoard.Grid);
-
-        var nextBoard = Board.BuildNextGeneration(grid);
-        currentBoard.Grid = Board.SerializeGrid(nextBoard);
-        currentBoard.LatestUpdateAt = _clockService.CurrentUtc;
-        currentBoard.Generation += 1;
+        currentBoard.NextGeneration(_clockService.CurrentUtc);
 
         _context.Boards.Update(currentBoard);
         await _context.SaveChangesAsync();
 
-        return new Success<NextBoardResultDto>(new NextBoardResultDto(currentBoard.Id, currentBoard.Generation, nextBoard));
+        return new Success<NextBoardResultDto>(
+                new NextBoardResultDto(currentBoard.Id,
+                    currentBoard.Generation,
+                    Board.DeserializeGrid(currentBoard.Grid)));
     }
 
-    public async Task<Result> Advance(Guid boardId, int steps, CancellationToken cancellationToken)
+    public async Task<CrossCutting.Result.IResult> Advance(Guid boardId, int steps, CancellationToken cancellationToken)
     {
         if (steps < 1)
             return new Fail(new List<string> { "Invalid steps." });
-            
+
         var board = await _context.Boards.FindAsync(boardId);
 
         if (board == null)
@@ -96,13 +86,13 @@ public class GameOfLifeService : IGameOfLifeService
         return new Success();
     }
 
-    public async Task<Result> Start(Guid boardId, CancellationToken cancellationToken)
+    public async Task<CrossCutting.Result.IResult> Start(Guid boardId, CancellationToken cancellationToken)
     {
         var board = await _context.Boards.FindAsync(boardId);
 
         if (board == null || board.IsRunning) return new Fail(new List<string> { "Invalid board" });
 
-        board.IsRunning = true;
+        board.Start();
 
         _boardCache.AddOrUpdate(board);
         await _context.SaveChangesAsync(cancellationToken);

@@ -4,7 +4,6 @@ public static class AddContextExtension
 {
     public static string BuildPostgresConnectionString(this IConfigurationBuilder builder, IHostEnvironment environment)
     {
-        // Load configs
         builder
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile($"appsettings.{environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
@@ -12,7 +11,6 @@ public static class AddContextExtension
 
         var configuration = builder.Build();
 
-        // Read values (supports both env vars and appsettings)
         var dbHost = configuration["DB_HOST"] ?? configuration["Database:Host"];
         var dbPort = configuration["DB_PORT"] ?? configuration["Database:Port"];
         var dbName = configuration["DB_NAME"] ?? configuration["Database:Name"];

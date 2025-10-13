@@ -5,5 +5,5 @@ namespace GameOfLife.Services;
 
 public interface IAdvanceNStepsService
 {
-    public Task<Result<Board>> GetFinalResultOrFail(Guid boardId, int steps, CancellationToken cancellationToken);
+    public Task<IResult<Board>> GetFinalResultOrFail(Guid boardId, int steps, CancellationToken cancellationToken);
 }

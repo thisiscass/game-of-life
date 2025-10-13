@@ -28,7 +28,7 @@ public class AdvanceNStepsService : IAdvanceNStepsService
         return !grid.Contains('1');
     }
 
-    public async Task<Result<Board>> GetFinalResultOrFail(
+    public async Task<IResult<Board>> GetFinalResultOrFail(
         Guid boardId,
         int steps,
         CancellationToken cancellationToken)
@@ -80,7 +80,7 @@ public class AdvanceNStepsService : IAdvanceNStepsService
             board.Grid = currentSerialized;
             board.Generation = currentGeneration;
             board.LatestUpdateAt = _clockService.CurrentUtc;
-            
+
             await _context.SaveChangesAsync(cancellationToken);
             return new Success<Board>(board);
         }
