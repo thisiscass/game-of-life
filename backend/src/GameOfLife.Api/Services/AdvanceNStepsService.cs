@@ -9,18 +9,15 @@ public class AdvanceNStepsService : IAdvanceNStepsService
     private readonly GameOfLifeContext _context;
     private readonly IClockService _clockService;
     private readonly IBoardLockService _boardLockService;
-    private readonly ILogger<AdvanceNStepsService> _logger;
 
     public AdvanceNStepsService(
         GameOfLifeContext context,
         IClockService clockService,
-        IBoardLockService boardLockService,
-        ILogger<AdvanceNStepsService> logger)
+        IBoardLockService boardLockService)
     {
         _context = context;
         _clockService = clockService;
         _boardLockService = boardLockService;
-        _logger = logger;
     }
 
     private bool IsEmptyGrid(string grid)
@@ -68,7 +65,6 @@ public class AdvanceNStepsService : IAdvanceNStepsService
             {
                 concluded = true;
                 currentSerialized = nextSerialized;
-                break;
             }
 
             seen[nextSerialized] = currentGeneration;

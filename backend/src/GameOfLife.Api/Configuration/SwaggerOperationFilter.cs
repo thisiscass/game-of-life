@@ -43,6 +43,15 @@ public class SwaggerOperationFilter : IOperationFilter
             {
                 ProcessResultType(arg, operation, context);
             }
+
+            foreach (var arg in args)
+            {
+                if (arg.IsGenericType && arg.GetGenericTypeDefinition().Name == "Ok`1")
+                {
+                    var payloadType = arg.GetGenericArguments()[0];
+                    AddResponse(operation, context, "200", payloadType);
+                }
+            }
         }
         else
         {
@@ -70,16 +79,8 @@ public class SwaggerOperationFilter : IOperationFilter
                 var status = map.StatusCode;
                 if (!operation.Responses.ContainsKey(status))
                 {
-                    var response = new OpenApiResponse { Description = GetDescription(status) };
-
                     var payloadType = resultType.GetGenericArguments()[0];
-                    var schema = context.SchemaGenerator.GenerateSchema(payloadType, context.SchemaRepository);
-                    response.Content = new Dictionary<string, OpenApiMediaType>
-                    {
-                        ["application/json"] = new OpenApiMediaType { Schema = schema }
-                    };
-
-                    operation.Responses[status] = response;
+                    AddResponse(operation, context, status, payloadType);
                 }
                 return;
             }
@@ -89,16 +90,19 @@ public class SwaggerOperationFilter : IOperationFilter
         {
             const string status200 = "200";
             if (!operation.Responses.ContainsKey(status200))
-            {
-                var resp = new OpenApiResponse { Description = "OK" };
-                var schema = context.SchemaGenerator.GenerateSchema(resultType, context.SchemaRepository);
-                resp.Content = new System.Collections.Generic.Dictionary<string, OpenApiMediaType>
-                {
-                    ["application/json"] = new OpenApiMediaType { Schema = schema }
-                };
-                operation.Responses[status200] = resp;
-            }
+                AddResponse(operation, context, status200, resultType);
         }
+    }
+
+    private static void AddResponse(OpenApiOperation operation, OperationFilterContext context, string statusCode, Type payloadType)
+    {
+        var response = new OpenApiResponse { Description = GetDescription(statusCode) };
+        var schema = context.SchemaGenerator.GenerateSchema(payloadType, context.SchemaRepository);
+        response.Content = new Dictionary<string, OpenApiMediaType>
+        {
+            ["application/json"] = new OpenApiMediaType { Schema = schema }
+        };
+        operation.Responses[statusCode] = response;
     }
 
     private static bool IsHttpResultType(Type t)

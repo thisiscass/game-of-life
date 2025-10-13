@@ -15,4 +15,6 @@ public class BoardCache
     public void Clear() => _boards.Clear();
 
     public bool TryGetBoard(Guid id, out Board? board) => _boards.TryGetValue(id, out board);
+
+    public bool TryRemoveBoard(Guid id, out Board? board) => _boards.TryRemove(id, out board);
 }
