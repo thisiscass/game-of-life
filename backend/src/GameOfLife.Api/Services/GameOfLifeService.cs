@@ -116,8 +116,8 @@ public class GameOfLifeService : IGameOfLifeService
     {
         var board = await _context.Boards.FindAsync(boardId);
 
-        if (board == null || !board.IsRunning) 
-            return new Fail(new List<string> { "Invalid board" });
+        if (board == null || !board.IsRunning)
+            return new Fail("Invalid board");
 
         _boardCache.TryRemoveBoard(boardId, out _);
         board.Stop();
