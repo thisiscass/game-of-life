@@ -2,11 +2,12 @@ using GameOfLife.CrossCutting.Result;
 using GameOfLife.Api.Dtos;
 using GameOfLife.Api.Models;
 
-namespace GameOfLife.Api.Services;
+namespace GameOfLife.Services;
 
 public interface IGameOfLifeService
 {
-    Task<Result<Guid>> Create(CreateBoardDto board);
-    Task<Result<NextBoardResultDto>> GetNextGeneration(Guid boardId);
-    Task<Result<Board>> GetAfterNSteps(int n);
+    Task<Result<Guid>> Create(CreateBoardDto board, CancellationToken cancellationToken);
+    Task<Result<NextBoardResultDto>> GetNextGeneration(Guid boardId, CancellationToken cancellationToken);
+    Task<Result> Advance(Guid boardId, int steps, CancellationToken cancellationToken);
+    Task<Result> Start(Guid boardId, CancellationToken cancellationToken);
 }

@@ -1,13 +1,11 @@
 using System.Net;
 using GameOfLife.Api.Dtos;
-using GameOfLife.Api.Services;
+using GameOfLife.Services;
 using GameOfLife.CrossCutting.Result;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace GameOfLife.APi.Controllers;
-
-public record NextGenerationResult(Guid boardId);
 
 [ApiController]
 [Route("api/board")]
@@ -27,9 +25,9 @@ public class GameOfLifeController
         Created<CreateBoardResultDto>,
         BadRequest<Fail<Guid>>,
         ProblemHttpResult
-        >> Post(CreateBoardDto board)
+        >> Post(CreateBoardDto board, CancellationToken cancellationToken = default)
     {
-        var result = await _gameOfLifeService.Create(board);
+        var result = await _gameOfLifeService.Create(board, cancellationToken);
 
         if (result is Success<Guid> suc) return TypedResults.Created(nameof(Get), new CreateBoardResultDto(suc.Data));
 
@@ -43,23 +41,34 @@ public class GameOfLifeController
     [HttpGet("{id}/next")]
     public async Task<Results<
         Ok<Result<NextBoardResultDto>>,
-        BadRequest<string>
-        >> Get(Guid id)
+        BadRequest<Fail<NextBoardResultDto>>
+        >> Get(Guid id, CancellationToken cancellationToken = default)
     {
-        // Generate next generation grid logic
-        var result = await _gameOfLifeService.GetNextGeneration(id);
+        var result = await _gameOfLifeService.GetNextGeneration(id, cancellationToken);
 
         return TypedResults.Ok(result);
     }
 
-    [HttpGet("{id}/advance/{steps}")]
-    public Results<
-        Ok<Grid>,
-        BadRequest<string>
-        > Advance(Guid id, int steps)
+    [HttpGet("{id}/start")]
+    public async Task<Results<
+        Accepted,
+        BadRequest
+        >> Start(Guid id, CancellationToken cancellationToken = default)
     {
-        // Generate next generation grid logic
-        return TypedResults.Ok(new Grid());
+        var result = await _gameOfLifeService.Start(id, cancellationToken);
+
+        return TypedResults.Accepted(string.Empty);
+    }
+
+    [HttpGet("{id}/advance/{steps}")]
+    public async Task<Results<
+        Accepted,
+        BadRequest<Fail>
+        >> Advance(Guid id, int steps, CancellationToken cancellationToken = default)
+    {
+        await _gameOfLifeService.Advance(id, steps, cancellationToken);
+
+        return TypedResults.Accepted(string.Empty);
     }
 
     [HttpGet("{id}/final")]

@@ -1,4 +1,4 @@
-namespace GameOfLife.Api.Services;
+namespace GameOfLife.Services;
 
 public class ClockService : IClockService
 {

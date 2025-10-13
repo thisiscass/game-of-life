@@ -9,7 +9,7 @@ public class GameOfLifeContext : DbContext
     : base(options)
     { }
 
-    public DbSet<Board>? Boards { get; set; }
+    public DbSet<Board> Boards { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

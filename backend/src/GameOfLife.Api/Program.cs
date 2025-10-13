@@ -1,15 +1,19 @@
 using System.Text.Json;
 using GameOfLife.Api.Data;
-using GameOfLife.Api.Dtos;
-using GameOfLife.Api.Services;
-using GameOfLife.Api.Validations;
 using GameOfLife.CrossCutting.Extensions;
+using GameOfLife.CrossCutting.Hubs;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Setting up log
+// Set up SignalR
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = true;
+});
+
+// Set up logging
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
@@ -45,6 +49,20 @@ builder.Services.AddHealthChecks()
         name: "postgres",
         tags: new[] { "ready" }
     );
+
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy", policy =>
+    {
+        policy
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials()
+            .SetIsOriginAllowed(_ => true);
+    });
+});
+
 
 builder.Services.AddGameOfLifeServices();
 
@@ -101,4 +119,7 @@ app.MapHealthChecks("/health/live", new HealthCheckOptions
 
 app.MapGet("/", () => "Game of Life API running...");
 
+app.MapHub<BoardHub>("/board");
+
+app.UseCors("CorsPolicy");
 app.Run();
