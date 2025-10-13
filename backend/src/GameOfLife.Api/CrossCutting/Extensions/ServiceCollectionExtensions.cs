@@ -15,7 +15,10 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<BoardCache>();
 
         services.AddHostedService<GameOfLifeBackgroundService>();
+        services.AddHostedService<AdvanceNStepsBackgroundService>();
 
+        services.AddSingleton<IAdvanceNStepsQueue, AdvanceNStepsQueue>();
+        services.AddSingleton<IBoardLockService, BoardLockService>();
 
         return services;
     }
