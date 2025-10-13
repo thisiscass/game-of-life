@@ -98,4 +98,17 @@ public class GameOfLifeService : IGameOfLifeService
 
         return new Success();
     }
+
+    public async Task<CrossCutting.Result.IResult> CleanRunningBoards(CancellationToken cancellationToken)
+    {
+        var runningBoards = _context.Boards!.Where(b => b.IsRunning);
+        foreach (var board in runningBoards)
+            board.IsRunning = false;
+
+        await _context.SaveChangesAsync(cancellationToken);
+
+        _boardCache.Clear();
+
+        return new Success();
+    }
 }

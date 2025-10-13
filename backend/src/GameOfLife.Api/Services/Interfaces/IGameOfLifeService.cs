@@ -9,4 +9,5 @@ public interface IGameOfLifeService
     Task<IResult<NextBoardResultDto>> GetNextGeneration(Guid boardId, CancellationToken cancellationToken);
     Task<CrossCutting.Result.IResult> Advance(Guid boardId, int steps, CancellationToken cancellationToken);
     Task<CrossCutting.Result.IResult> Start(Guid boardId, CancellationToken cancellationToken);
+    Task<CrossCutting.Result.IResult> CleanRunningBoards(CancellationToken cancellationToken);
 }

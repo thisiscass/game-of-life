@@ -29,15 +29,9 @@ public class GameOfLifeBackgroundService : BackgroundService
     {
         using (var scope = _scopeFactory.CreateScope())
         {
-            var db = scope.ServiceProvider.GetRequiredService<GameOfLifeContext>();
+            var service = scope.ServiceProvider.GetRequiredService<IGameOfLifeService>();
 
-            var runningBoards = db.Boards!.Where(b => b.IsRunning);
-            foreach (var board in runningBoards)
-                board.IsRunning = false;
-
-            await db.SaveChangesAsync();
-
-            _cache.Clear();
+            await service.CleanRunningBoards(cancellationToken);
         }
 
         await base.StartAsync(cancellationToken);
