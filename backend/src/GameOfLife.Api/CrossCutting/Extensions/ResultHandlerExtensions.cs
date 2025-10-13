@@ -25,7 +25,7 @@ public static class ResultHandlerExtensions
         };
     }
 
-    public static Results<Accepted, BadRequest<Fail>> ToAcceptResult(this Result.IResult result, string routeName)
+    public static Results<Accepted, BadRequest<Fail>> ToAcceptResult(this Result.IResult result, string routeName = "")
     {
         return result switch
         {
@@ -35,7 +35,7 @@ public static class ResultHandlerExtensions
         };
     }
 
-    public static Results<Created<Success<T>>, BadRequest<Fail<T>>> ToCreatedResult<T>(this IResult<T> result, string routeName)
+    public static Results<Created<Success<T>>, BadRequest<Fail<T>>> ToCreatedResult<T>(this IResult<T> result, string routeName = "")
     {
         return result switch
         {

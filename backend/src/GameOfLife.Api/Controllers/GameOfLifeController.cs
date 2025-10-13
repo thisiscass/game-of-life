@@ -1,4 +1,3 @@
-using System.Net;
 using GameOfLife.Api.Dtos;
 using GameOfLife.Services;
 using GameOfLife.CrossCutting.Result;
@@ -48,7 +47,7 @@ public class GameOfLifeController
     {
         var result = await _gameOfLifeService.Start(id, cancellationToken);
 
-        return result.ToAcceptResult(string.Empty);
+        return result.ToAcceptResult();
     }
 
     [HttpGet("{id}/advance/{steps}")]
@@ -59,6 +58,6 @@ public class GameOfLifeController
     {
         var result = await _gameOfLifeService.Advance(id, steps, cancellationToken);
 
-        return result.ToAcceptResult(string.Empty);
+        return result.ToAcceptResult();
     }
 }
