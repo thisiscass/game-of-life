@@ -1,34 +1,35 @@
 using System.Text.Json;
 using GameOfLife.Api.Data;
+using GameOfLife.Configuration;
+using GameOfLife.CrossCutting.Extensions;
+using GameOfLife.CrossCutting.Hubs;
+using GameOfLife.CrossCutting.Middlewares;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Setting up log
+// Set up SignalR
+builder.Services.AddSignalR(options =>
+{
+    options.EnableDetailedErrors = true;
+});
+
+// Set up logging
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
 
-// Add appsettings.json and environment variables
-builder.Configuration
-    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
-    .AddEnvironmentVariables();
-
-var dbHost = builder.Configuration["DB_HOST"] ?? builder.Configuration["Database:Host"];
-var dbPort = builder.Configuration["DB_PORT"] ?? builder.Configuration["Database:Port"];
-var dbName = builder.Configuration["DB_NAME"] ?? builder.Configuration["Database:Name"];
-var dbUser = builder.Configuration["DB_USER"] ?? builder.Configuration["Database:User"];
-var dbPassword = builder.Configuration["DB_PASSWORD"] ?? builder.Configuration["Database:Password"];
-
 // Build the connection string
-var connectionString = $"Host={dbHost};Port={dbPort};Database={dbName};Username={dbUser};Password={dbPassword}";
+var connectionString = builder.Configuration.BuildPostgresConnectionString(builder.Environment);
 
 // Add services to the container.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.OperationFilter<SwaggerOperationFilter>();
+});
 
 builder.Services.AddDbContext<GameOfLifeContext>(options =>
 {
@@ -42,23 +43,31 @@ builder.Services.AddHealthChecks()
         tags: new[] { "ready" }
     );
 
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy", policy =>
+    {
+        policy
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials()
+            .SetIsOriginAllowed(_ => true);
+    });
+});
+
+
+builder.Services.AddGameOfLifeServices();
+
 var app = builder.Build();
 
 app.Logger.LogInformation("🚀 Game of Life API is starting up...");
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseMiddleware<RequestLoggingMiddleware>();
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
-var lifetime = app.Lifetime;
-
-lifetime.ApplicationStarted.Register(() =>
-{
-    app.Logger.LogInformation("✅ Game of Life API is now running in {EnvironmentName}...", app.Environment.EnvironmentName);
-});
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
@@ -95,5 +104,16 @@ app.MapHealthChecks("/health/live", new HealthCheckOptions
 });
 
 app.MapGet("/", () => "Game of Life API running...");
+
+app.MapHub<BoardHub>("/board");
+
+app.UseCors("CorsPolicy");
+
+var lifetime = app.Lifetime;
+
+lifetime.ApplicationStarted.Register(() =>
+{
+    app.Logger.LogInformation("✅ Game of Life API is now running in {EnvironmentName}...", app.Environment.EnvironmentName);
+});
 
 app.Run();

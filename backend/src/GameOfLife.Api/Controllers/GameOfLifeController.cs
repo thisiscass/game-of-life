@@ -1,40 +1,74 @@
+using GameOfLife.Api.Dtos;
+using GameOfLife.Services;
+using GameOfLife.CrossCutting.Result;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using GameOfLife.CrossCutting.Extensions;
 
 namespace GameOfLife.APi.Controllers;
 
 [ApiController]
-[Route("api/grid")]
+[Route("api/board")]
 public class GameOfLifeController
 {
-    [HttpPost]
-    public Results<Created<PostResult>, BadRequest<string>> Post(Grid grid)
+    private readonly IGameOfLifeService _gameOfLifeService;
+    public GameOfLifeController(IGameOfLifeService gameOfLifeService)
     {
-        return TypedResults.Created(string.Empty, new PostResult(Guid.Empty));
+        _gameOfLifeService = gameOfLifeService;
+    }
+
+    [HttpPost]
+    public async Task<Results<
+        Created<Success<CreateBoardResultDto>>,
+        BadRequest<Fail<CreateBoardResultDto>>
+        >> Post(CreateBoardDto board, CancellationToken cancellationToken = default)
+    {
+        var result = await _gameOfLifeService.Create(board, cancellationToken);
+
+        return result.ToCreatedResult(nameof(Get));
     }
 
     [HttpGet("{id}/next")]
-    public Results<Ok<Grid>, BadRequest<string>> Get(Guid id)
+    public async Task<Results<
+        Ok<Success<NextBoardResultDto>>,
+        BadRequest<Fail<NextBoardResultDto>>
+        >> Get(Guid id, CancellationToken cancellationToken = default)
     {
-        // Generate next generation grid logic
-        return TypedResults.Ok(new Grid());
+        var result = await _gameOfLifeService.GetNextGeneration(id, cancellationToken);
+
+        return result.ToHttpResult();
+    }
+
+    [HttpGet("{id}/start")]
+    public async Task<Results<
+        Accepted,
+        BadRequest<Fail>
+        >> Start(Guid id, CancellationToken cancellationToken = default)
+    {
+        var result = await _gameOfLifeService.Start(id, cancellationToken);
+
+        return result.ToAcceptResult();
     }
 
     [HttpGet("{id}/advance/{steps}")]
-    public Results<Ok<Grid>, BadRequest<string>> Advance(Guid id, int steps)
+    public async Task<Results<
+        Accepted,
+        BadRequest<Fail>
+        >> Advance(Guid id, int steps, CancellationToken cancellationToken = default)
     {
-        // Generate next generation grid logic
-        return TypedResults.Ok(new Grid());
+        var result = await _gameOfLifeService.Advance(id, steps, cancellationToken);
+
+        return result.ToAcceptResult();
     }
 
-     [HttpGet("{id}/final")]
-    public Results<Ok<Grid>, BadRequest<string>> Final(Guid id, int steps)
+    [HttpGet("{id}/stop")]
+    public async Task<Results<
+        Accepted,
+        BadRequest<Fail>
+        >> Stop(Guid id, CancellationToken cancellationToken = default)
     {
-        // Generate next generation grid logic
-        return TypedResults.Ok(new Grid());
+        var result = await _gameOfLifeService.Stop(id, cancellationToken);
+
+        return result.ToAcceptResult();
     }
 }
-
-public record Grid();
-
-public record PostResult(Guid id);
