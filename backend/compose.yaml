@@ -21,6 +21,9 @@ services:
       db:
         condition: service_healthy
         restart: true
+      migrate:
+        condition: service_completed_successfully
+
   db:
     image: postgres
     container_name: gameoflife-db
@@ -40,6 +43,33 @@ services:
       timeout: 10s
       retries: 5
       start_period: 30s
+  
+  migrate:
+    image: postgres
+    networks:
+      - gameoflife_network
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    volumes:
+      - ./sql:/migrations
+    entrypoint: >
+      bash -c "
+        echo 'Waiting for database...';
+        until pg_isready -h ${DB_HOST} -p ${DB_PORT} -U ${DB_USER}; do
+          sleep 2;
+        done;
+        echo 'Database ready, applying migrations...';
+        PGPASSWORD=${DB_PASSWORD} psql -h ${DB_HOST} -U ${DB_USER} -d ${DB_NAME} -v ON_ERROR_STOP=1 -f /migrations/migrate.sql;
+        echo 'Migrations applied successfully. Exiting.';
+      "
+    environment:
+      POSTGRES_HOST: ${DB_HOST}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
 
 networks:
   gameoflife_network:

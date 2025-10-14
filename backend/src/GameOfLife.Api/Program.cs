@@ -3,6 +3,7 @@ using GameOfLife.Api.Data;
 using GameOfLife.Configuration;
 using GameOfLife.CrossCutting.Extensions;
 using GameOfLife.CrossCutting.Hubs;
+using GameOfLife.CrossCutting.Middlewares;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
 
@@ -61,6 +62,9 @@ builder.Services.AddGameOfLifeServices();
 var app = builder.Build();
 
 app.Logger.LogInformation("🚀 Game of Life API is starting up...");
+
+app.UseMiddleware<RequestLoggingMiddleware>();
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
 app.UseSwagger();
 app.UseSwaggerUI();
