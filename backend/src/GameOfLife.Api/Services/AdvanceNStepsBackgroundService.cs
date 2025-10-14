@@ -10,17 +10,17 @@ public class AdvanceNStepsBackgroundService : BackgroundService
     private readonly IHubContext<BoardHub> _hub;
     private readonly ILogger<AdvanceNStepsBackgroundService> _logger;
     private readonly IAdvanceNStepsQueue _queue;
-    private readonly IAdvanceNStepsService _advanceNStepsService;
+    private readonly IServiceScopeFactory _scopeFactory;
 
     public AdvanceNStepsBackgroundService(IAdvanceNStepsQueue queue,
-        IAdvanceNStepsService advanceNStepsService,
         IHubContext<BoardHub> hub,
-        ILogger<AdvanceNStepsBackgroundService> logger)
+        ILogger<AdvanceNStepsBackgroundService> logger,
+        IServiceScopeFactory scopeFactory)
     {
         _queue = queue;
         _hub = hub;
         _logger = logger;
-        _advanceNStepsService = advanceNStepsService;
+        _scopeFactory = scopeFactory;
     }
 
     public override async Task StartAsync(CancellationToken cancellationToken)
@@ -54,23 +54,29 @@ public class AdvanceNStepsBackgroundService : BackgroundService
 
             try
             {
-                var result =
-                    await _advanceNStepsService.GetFinalResultOrFail(
-                        request!.BoardId,
-                        request.Steps,
-                        cancellationToken);
+                using (var scope = _scopeFactory.CreateScope())
+                {
+                    var advanceNStepsService = scope.ServiceProvider.GetRequiredService<IAdvanceNStepsService>();
 
-                if (result is Success<Board> succ)
-                {
-                    await _hub.Clients.Group($"board-{request.BoardId}")
-                        .SendAsync("AdvanceCompleted",
-                            new { boardId = request.BoardId, grid = succ.Data!.Grid, generation = succ.Data!.Generation });
+                    var result =
+                        await advanceNStepsService.GetFinalResultOrFail(
+                            request!.BoardId,
+                            request.Steps,
+                            cancellationToken);
+
+                    if (result is Success<Board> succ)
+                    {
+                        await _hub.Clients.Group($"board-{request.BoardId}")
+                            .SendAsync("AdvanceCompleted",
+                                new { boardId = request.BoardId, grid = succ.Data!.Grid, generation = succ.Data!.Generation });
+                    }
+                    else
+                    {
+                        await _hub.Clients.Group($"board-{request.BoardId}")
+                            .SendAsync("AdvanceFailed", new { boardId = request.BoardId });
+                    }
                 }
-                else
-                {
-                    await _hub.Clients.Group($"board-{request.BoardId}")
-                        .SendAsync("AdvanceFailed", new { boardId = request.BoardId });
-                }
+
             }
             catch (Exception ex)
             {

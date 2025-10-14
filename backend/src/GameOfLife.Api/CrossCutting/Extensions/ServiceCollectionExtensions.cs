@@ -11,14 +11,15 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<ICreateBoardValidation<CreateBoardDto>, CreateBoardValidation>();
 
-        services.AddScoped<IGameOfLifeService, GameOfLifeService>();
-        services.AddSingleton<IClockService, ClockService>();
-        services.AddSingleton<IBoardLockService, BoardLockService>();
-        services.AddSingleton<IAdvanceNStepsService, AdvanceNStepsService>();
-        services.AddSingleton<BoardCache>();
-
         services.AddHostedService<GameOfLifeBackgroundService>();
         services.AddHostedService<AdvanceNStepsBackgroundService>();
+
+        services.AddScoped<IGameOfLifeService, GameOfLifeService>();
+        services.AddScoped<IAdvanceNStepsService, AdvanceNStepsService>();
+
+        services.AddSingleton<IClockService, ClockService>();
+        services.AddSingleton<IBoardLockService, BoardLockService>();
+        services.AddSingleton<BoardCache>();
 
         services.AddSingleton<IAdvanceNStepsQueue, AdvanceNStepsQueue>();
 
