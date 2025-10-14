@@ -1,4 +1,4 @@
-using GameOfLife.Api.Models;
+using GameOfLife.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace GameOfLife.Api.Data;

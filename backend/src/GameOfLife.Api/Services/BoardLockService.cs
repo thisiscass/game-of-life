@@ -16,7 +16,7 @@ public class BoardLockService : IBoardLockService
     private sealed class Releaser : IDisposable
     {
         private readonly Guid _id;
-        private readonly SemaphoreSlim _sem;
+        private readonly SemaphoreSlim _semaphore;
         private readonly ConcurrentDictionary<Guid, SemaphoreSlim> _parent;
         private bool _disposed;
 
@@ -25,16 +25,16 @@ public class BoardLockService : IBoardLockService
             SemaphoreSlim sem,
             ConcurrentDictionary<Guid, SemaphoreSlim> parent)
         {
-            _id = id; _sem = sem; 
+            _id = id; _semaphore = sem; 
             _parent = parent;
         }
 
         public void Dispose()
         {
             if (_disposed) return;
-            _sem.Release();
+            _semaphore.Release();
 
-            if (_sem.CurrentCount == 1) _parent.TryRemove(_id, out _);
+            if (_semaphore.CurrentCount == 1) _parent.TryRemove(_id, out _);
             _disposed = true;
         }
     }

@@ -1,6 +1,4 @@
-using System.Security.Cryptography;
-
-namespace GameOfLife.Api.Models;
+namespace GameOfLife.Models;
 
 public class Board
 {
@@ -43,7 +41,6 @@ public class Board
     public static string SerializeGrid(int[][] grid)
     {
         return string.Join(";", grid.Select(row => string.Join(",", row)));
-
     }
 
     public static int[][] DeserializeGrid(string serialized)

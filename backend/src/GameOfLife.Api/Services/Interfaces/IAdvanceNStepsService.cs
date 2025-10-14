@@ -1,4 +1,4 @@
-using GameOfLife.Api.Models;
+using GameOfLife.Models;
 using GameOfLife.CrossCutting.Result;
 
 namespace GameOfLife.Services;

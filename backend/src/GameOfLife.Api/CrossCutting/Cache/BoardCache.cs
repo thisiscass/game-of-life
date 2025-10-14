@@ -1,9 +1,9 @@
 using System.Collections.Concurrent;
-using GameOfLife.Api.Models;
+using GameOfLife.Models;
 
 namespace GameOfLife.CrossCutting.Cache;
 
-public class BoardCache
+public class BoardCache : IBoardCache
 {
     private readonly ConcurrentDictionary<Guid, Board> _boards = new();
 

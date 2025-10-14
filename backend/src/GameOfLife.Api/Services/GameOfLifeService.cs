@@ -1,69 +1,60 @@
 using GameOfLife.CrossCutting.Result;
 using GameOfLife.Api.Data;
 using GameOfLife.Api.Dtos;
-using GameOfLife.Api.Models;
+using GameOfLife.Models;
 using GameOfLife.Api.Validations;
 using GameOfLife.CrossCutting.Cache;
-using Microsoft.AspNetCore.SignalR;
-using GameOfLife.CrossCutting.Hubs;
+using GameOfLife.Repositories;
 
 namespace GameOfLife.Services;
 
 public class GameOfLifeService : IGameOfLifeService
 {
-    private ILogger<GameOfLifeService> _logger;
     private readonly ICreateBoardValidation<CreateBoardDto> _validation;
-    private readonly GameOfLifeContext _context;
     private readonly IClockService _clockService;
-    private readonly BoardCache _boardCache;
-    private readonly IHubContext<BoardHub> _hubContext;
+    private readonly IBoardCache _boardCache;
     private readonly IAdvanceNStepsQueue _advanceNStepsQueue;
+    private readonly IBoardRepository _boardRepository;
 
     public GameOfLifeService(
         ICreateBoardValidation<CreateBoardDto> validation,
-        GameOfLifeContext context,
-        ILogger<GameOfLifeService> logger,
         IClockService clockService,
-        BoardCache boardCache,
-        IHubContext<BoardHub> hubContext,
-        IAdvanceNStepsQueue advanceNStepsQueue)
+        IBoardCache boardCache,
+        IAdvanceNStepsQueue advanceNStepsQueue,
+        IBoardRepository boardRepository)
     {
         _validation = validation;
-        _context = context;
-        _logger = logger;
         _clockService = clockService;
         _boardCache = boardCache;
-        _hubContext = hubContext;
         _advanceNStepsQueue = advanceNStepsQueue;
+        _boardRepository = boardRepository;
     }
 
     public async Task<IResult<CreateBoardResultDto>> Create(CreateBoardDto boardDto, CancellationToken cancellationToken)
     {
         var validation = _validation.PerformValidation(boardDto);
-        if (!validation.IsValid) return new Fail<CreateBoardResultDto>(validation.GetErrors());
+        if (!validation.IsValid) 
+            return new Fail<CreateBoardResultDto>(validation.GetErrors());
 
         var grid = Board.SerializeGrid(boardDto.Grid);
 
         var newBoard = new Board(Guid.NewGuid(), grid, _clockService.CurrentUtc);
 
-        _context.Boards!.Add(newBoard);
-        await _context.SaveChangesAsync();
+        await _boardRepository.Add(newBoard, cancellationToken);
 
         return new Success<CreateBoardResultDto>(new CreateBoardResultDto(newBoard.Id));
-
     }
 
     public async Task<IResult<NextBoardResultDto>> GetNextGeneration(Guid boardId, CancellationToken cancellationToken)
     {
-        var currentBoard = await _context.Boards.FindAsync(boardId);
+        var currentBoard = await _boardRepository.GetById(boardId);
 
         if (currentBoard == null)
             return new Fail<NextBoardResultDto>(new List<string> { "Invalid board" });
 
         currentBoard.NextGeneration(_clockService.CurrentUtc);
 
-        _context.Boards.Update(currentBoard);
-        await _context.SaveChangesAsync();
+        await _boardRepository.Update(currentBoard, cancellationToken);
 
         return new Success<NextBoardResultDto>(
                 new NextBoardResultDto(currentBoard.Id,
@@ -73,10 +64,10 @@ public class GameOfLifeService : IGameOfLifeService
 
     public async Task<CrossCutting.Result.IResult> Advance(Guid boardId, int steps, CancellationToken cancellationToken)
     {
-        if (steps < 1)
-            return new Fail(new List<string> { "Invalid steps." });
+        if (steps < 1 || steps > 100)
+            return new Fail("Invalid steps.");
 
-        var board = await _context.Boards.FindAsync(boardId);
+        var board = await _boardRepository.GetById(boardId);
 
         if (board == null || board.IsRunning) return new Fail(new List<string> { "Invalid board" });
 
@@ -87,25 +78,25 @@ public class GameOfLifeService : IGameOfLifeService
 
     public async Task<CrossCutting.Result.IResult> Start(Guid boardId, CancellationToken cancellationToken)
     {
-        var board = await _context.Boards.FindAsync(boardId);
+        var board = await _boardRepository.GetById(boardId);
 
         if (board == null || board.IsRunning) return new Fail(new List<string> { "Invalid board" });
 
         board.Start();
 
         _boardCache.AddOrUpdate(board);
-        await _context.SaveChangesAsync(cancellationToken);
+        await _boardRepository.Update(board, cancellationToken);
 
         return new Success();
     }
 
     public async Task<CrossCutting.Result.IResult> CleanRunningBoards(CancellationToken cancellationToken)
     {
-        var runningBoards = _context.Boards!.Where(b => b.IsRunning);
+        var runningBoards = await _boardRepository.GetRunning(cancellationToken);
         foreach (var board in runningBoards)
             board.Stop();
 
-        await _context.SaveChangesAsync(cancellationToken);
+        await _boardRepository.Update(runningBoards, cancellationToken);
 
         _boardCache.Clear();
 
@@ -114,7 +105,7 @@ public class GameOfLifeService : IGameOfLifeService
 
     public async Task<CrossCutting.Result.IResult> Stop(Guid boardId, CancellationToken cancellationToken)
     {
-        var board = await _context.Boards.FindAsync(boardId);
+        var board = await _boardRepository.GetById(boardId);
 
         if (board == null || !board.IsRunning)
             return new Fail("Invalid board");
@@ -122,7 +113,7 @@ public class GameOfLifeService : IGameOfLifeService
         _boardCache.TryRemoveBoard(boardId, out _);
         board.Stop();
         
-        await _context.SaveChangesAsync(cancellationToken);
+        await _boardRepository.Update(board);
 
         return new Success();
     }

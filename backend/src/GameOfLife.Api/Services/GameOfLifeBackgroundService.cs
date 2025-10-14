@@ -1,5 +1,4 @@
-using GameOfLife.Api.Data;
-using GameOfLife.Api.Models;
+using GameOfLife.Models;
 using GameOfLife.CrossCutting.Cache;
 using GameOfLife.CrossCutting.Hubs;
 using Microsoft.AspNetCore.SignalR;

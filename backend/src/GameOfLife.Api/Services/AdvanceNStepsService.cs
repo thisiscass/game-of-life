@@ -1,6 +1,7 @@
 using GameOfLife.Api.Data;
-using GameOfLife.Api.Models;
+using GameOfLife.Models;
 using GameOfLife.CrossCutting.Result;
+using GameOfLife.Repositories;
 
 namespace GameOfLife.Services;
 
@@ -9,15 +10,18 @@ public class AdvanceNStepsService : IAdvanceNStepsService
     private readonly GameOfLifeContext _context;
     private readonly IClockService _clockService;
     private readonly IBoardLockService _boardLockService;
+    private readonly IBoardRepository _boardRepository;
 
     public AdvanceNStepsService(
         GameOfLifeContext context,
         IClockService clockService,
-        IBoardLockService boardLockService)
+        IBoardLockService boardLockService,
+        IBoardRepository boardRepository)
     {
         _context = context;
         _clockService = clockService;
         _boardLockService = boardLockService;
+        _boardRepository = boardRepository;
     }
 
     private bool IsEmptyGrid(string grid)
@@ -36,7 +40,7 @@ public class AdvanceNStepsService : IAdvanceNStepsService
         // Ensuring not concurrent ride for same board
         using var lease = await _boardLockService.AcquireAsync(boardId, cancellationToken);
 
-        var board = await _context.Boards.FindAsync(new object[] { boardId }, cancellationToken);
+        var board = await _boardRepository.GetById(boardId);
         if (board == null)
             return new Fail<Board>("Invalid board.");
 

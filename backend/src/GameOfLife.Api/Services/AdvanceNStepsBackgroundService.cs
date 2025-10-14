@@ -1,4 +1,4 @@
-using GameOfLife.Api.Models;
+using GameOfLife.Models;
 using GameOfLife.CrossCutting.Hubs;
 using GameOfLife.CrossCutting.Result;
 using Microsoft.AspNetCore.SignalR;
