@@ -7,12 +7,12 @@ namespace GameOfLife.Services;
 
 public class GameOfLifeBackgroundService : BackgroundService
 {
-    private readonly BoardCache _cache;
+    private readonly IBoardCache _cache;
     private readonly IHubContext<BoardHub> _hub;
     private readonly ILogger<GameOfLifeBackgroundService> _logger;
     private readonly IServiceScopeFactory _scopeFactory;
 
-    public GameOfLifeBackgroundService(BoardCache cache,
+    public GameOfLifeBackgroundService(IBoardCache cache,
         IServiceScopeFactory scopeFactory,
         IHubContext<BoardHub> hub,
         ILogger<GameOfLifeBackgroundService> logger)

@@ -1,6 +1,7 @@
 using GameOfLife.Api.Dtos;
 using GameOfLife.Api.Validations;
 using GameOfLife.CrossCutting.Cache;
+using GameOfLife.Repositories;
 using GameOfLife.Services;
 
 namespace GameOfLife.CrossCutting.Extensions;
@@ -17,9 +18,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IGameOfLifeService, GameOfLifeService>();
         services.AddScoped<IAdvanceNStepsService, AdvanceNStepsService>();
 
+        services.AddScoped<IBoardRepository, BoardRepository>();
+
         services.AddSingleton<IClockService, ClockService>();
         services.AddSingleton<IBoardLockService, BoardLockService>();
-        services.AddSingleton<BoardCache>();
+        services.AddSingleton<IBoardCache, BoardCache>();
 
         services.AddSingleton<IAdvanceNStepsQueue, AdvanceNStepsQueue>();
 

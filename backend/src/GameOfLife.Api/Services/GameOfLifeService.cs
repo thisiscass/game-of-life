@@ -1,5 +1,4 @@
 using GameOfLife.CrossCutting.Result;
-using GameOfLife.Api.Data;
 using GameOfLife.Api.Dtos;
 using GameOfLife.Models;
 using GameOfLife.Api.Validations;
