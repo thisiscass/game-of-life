@@ -1,3 +1,14 @@
 namespace GameOfLife.Api.Dtos;
 
-public record CreateBoardDto(int[][] Grid);
+public class CreateBoardDto
+{
+    public CreateBoardDto(int[][] grid)
+    {
+        if (grid == null)
+            grid = Array.Empty<int[]>();
+
+        Grid = grid;
+    }
+    
+    public int[][] Grid;
+}

@@ -12,12 +12,19 @@ public sealed class CreateBoardValidation : Validator<CreateBoardDto>, ICreateBo
     public CreateBoardValidation()
     {
         AddRule(dto =>
-        {
-            if (dto.Grid == null) return false;
-            return dto.Grid.All(row => row != null && row.All(cell => cell == 0 || cell == 1));
-        }, "Invalid board - it accepts only 0 or 1.");
+          {
+              // Normalize null grid and inner rows
+              dto.Grid ??= Array.Empty<int[]>();
+              dto.Grid = dto.Grid
+                  .Select(row => row ?? Array.Empty<int>())
+                  .ToArray();
 
-        AddRule(dto => dto.Grid.Length > 0, "Invalid board");
+              // Validate only 0 or 1 values
+              return dto.Grid.All(row => row.All(cell => cell == 0 || cell == 1));
+          }, "Invalid board - it accepts only 0 or 1.");
+
+        AddRule(dto => dto.Grid.Length > 0 && dto.Grid.Length <= 20, "Invalid board size.");
+        AddRule(dto => dto.Grid.FirstOrDefault()?.Length <= 20, "Invalid board size.");
     }
 
     public CreateBoardValidation PerformValidation(CreateBoardDto obj)

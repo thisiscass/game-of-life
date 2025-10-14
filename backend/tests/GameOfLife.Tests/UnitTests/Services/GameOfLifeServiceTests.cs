@@ -1,5 +1,4 @@
 using GameOfLife.Models;
-using NSubstitute;
 using GameOfLife.Api.Validations;
 using GameOfLife.Api.Dtos;
 using GameOfLife.Services;

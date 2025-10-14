@@ -7,18 +7,15 @@ namespace GameOfLife.Services;
 
 public class AdvanceNStepsService : IAdvanceNStepsService
 {
-    private readonly GameOfLifeContext _context;
     private readonly IClockService _clockService;
     private readonly IBoardLockService _boardLockService;
     private readonly IBoardRepository _boardRepository;
 
     public AdvanceNStepsService(
-        GameOfLifeContext context,
         IClockService clockService,
         IBoardLockService boardLockService,
         IBoardRepository boardRepository)
     {
-        _context = context;
         _clockService = clockService;
         _boardLockService = boardLockService;
         _boardRepository = boardRepository;
@@ -81,7 +78,7 @@ public class AdvanceNStepsService : IAdvanceNStepsService
             board.Generation = currentGeneration;
             board.LatestUpdateAt = _clockService.CurrentUtc;
 
-            await _context.SaveChangesAsync(cancellationToken);
+            await _boardRepository.Update(board, cancellationToken);
             return new Success<Board>(board);
         }
 
