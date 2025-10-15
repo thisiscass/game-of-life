@@ -39,7 +39,7 @@ public class GameOfLifeController
         return result.ToHttpResult();
     }
 
-    [HttpGet("{id}/start")]
+    [HttpPost("{id}/start")]
     public async Task<Results<
         Accepted,
         BadRequest<Fail>
@@ -50,7 +50,7 @@ public class GameOfLifeController
         return result.ToAcceptResult();
     }
 
-    [HttpGet("{id}/advance/{steps}")]
+    [HttpPost("{id}/advance/{steps}")]
     public async Task<Results<
         Accepted,
         BadRequest<Fail>
@@ -61,7 +61,7 @@ public class GameOfLifeController
         return result.ToAcceptResult();
     }
 
-    [HttpGet("{id}/stop")]
+    [HttpPost("{id}/stop")]
     public async Task<Results<
         Accepted,
         BadRequest<Fail>

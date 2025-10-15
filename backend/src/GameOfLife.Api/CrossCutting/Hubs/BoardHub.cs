@@ -44,27 +44,4 @@ public class BoardHub : Hub
         }
 
     }
-
-    // public async Task StopBoard(Guid boardId)
-    // {
-    //     if (_cache.TryGetBoard(boardId, out var board))
-    //     {
-    //         board!.IsRunning = false;
-
-    //         using var scope = _scopeFactory.CreateScope();
-    //         var db = scope.ServiceProvider.GetRequiredService<GameOfLifeContext>();
-    //         var entity = await db.Boards!.FindAsync(boardId);
-    //         if (entity is not null)
-    //         {
-    //             entity.IsRunning = false;
-    //             entity.Generation = board.Generation;
-    //             entity.Grid = board.Grid;
-    //             await db.SaveChangesAsync();
-    //         }
-
-    //         _cache.Remove(boardId);
-    //     }
-
-    // }
-
 }

@@ -16,9 +16,11 @@ const Grid: React.FC<GridProps> = ({ rows = 20, columns = 20 }) => {
         start,
         stop,
         generation,
-        advanceGenerations } = useGameOfLife(rows, columns);
+        createBoard,
+        advanceSteps,
+        nextGeneration } = useGameOfLife(rows, columns);
 
-    const [advanceCount, setAdvanceCount] = useState<number | "">();
+    const [advanceCount, setAdvanceCount] = useState<number | "">("");
 
     return (
         <div className="flex flex-col items-center gap-3 mt-4">
@@ -48,8 +50,12 @@ const Grid: React.FC<GridProps> = ({ rows = 20, columns = 20 }) => {
                 <div className="flex items-start gap-2">
                     <button
                         onClick={() => {
-                            advanceGenerations(advanceCount === "" ? 1 : Number(advanceCount));
-                            setAdvanceCount("");
+                            if(advanceCount === "") {
+                                nextGeneration();
+                            } else {
+                                advanceSteps(Number(advanceCount));
+                                setAdvanceCount("");
+                            }
                         }}
                         disabled={isRunning || Number(advanceCount) < 0}
                         className={`px-4 py-1 rounded text-white transition ${isRunning
