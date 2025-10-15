@@ -16,7 +16,6 @@ const Grid: React.FC<GridProps> = ({ rows = 20, columns = 20 }) => {
         start,
         stop,
         generation,
-        createBoard,
         advanceSteps,
         nextGeneration } = useGameOfLife(rows, columns);
 

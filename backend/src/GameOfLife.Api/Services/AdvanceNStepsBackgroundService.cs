@@ -67,7 +67,7 @@ public class AdvanceNStepsBackgroundService : BackgroundService
                     if (result is Success<Board> succ)
                     {
                         await _hub.Clients.Group($"board-{request.BoardId}")
-                            .SendAsync("AdvanceCompleted",
+                            .SendAsync("UpdateBoard",
                                 new { boardId = request.BoardId, grid = succ.Data!.Grid, generation = succ.Data!.Generation });
                     }
                     else

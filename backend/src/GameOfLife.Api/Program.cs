@@ -105,9 +105,10 @@ app.MapHealthChecks("/health/live", new HealthCheckOptions
 
 app.MapGet("/", () => "Game of Life API running...");
 
+app.UseCors("CorsPolicy");
+
 app.MapHub<BoardHub>("/board");
 
-app.UseCors("CorsPolicy");
 
 var lifetime = app.Lifetime;
 
