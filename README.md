@@ -1,5 +1,7 @@
 # Game Of Life
 
+![Game](Game.png)
+
 ## 1. Project Overview & Goals
 
 This backend implements Conway’s Game of Life as a web + real-time API. Key features:
