@@ -109,8 +109,10 @@ public class GameOfLifeService : IGameOfLifeService
         if (board == null || !board.IsRunning)
             return new Fail("Invalid board");
 
-        _boardCache.TryRemoveBoard(boardId, out _);
+        _boardCache.TryRemoveBoard(boardId, out var boardStopped);
         board.Stop();
+        board.Generation = boardStopped.Generation;
+        board.LatestUpdateAt = _clockService.CurrentUtc;
         
         await _boardRepository.Update(board);
 

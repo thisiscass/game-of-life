@@ -10,5 +10,5 @@ public class CreateBoardDto
         Grid = grid;
     }
     
-    public int[][] Grid;
+    public int[][] Grid { get; set; }
 }
