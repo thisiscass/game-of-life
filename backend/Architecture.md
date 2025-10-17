@@ -31,15 +31,15 @@
 
 ### In-memory Cache of Running Boards
 
-- When a board is running (via Start or Advance N), we load it into an in-memory cache so that the background service works from memory (fast) rather than querying DB repeatedly.
+- When a board is running (via Start or Advance N), the logic load it into an in-memory cache so that the background service works from memory (fast) rather than querying DB repeatedly.
 
 - The cache also tracks which boards are active, to know which to process and to broadcast updates efficiently.
 
 ### Concurrency: one board per critical area
 
-- To avoid race conditions, we enforce that only one simulation per board ID runs at a time.
+- To avoid race conditions, it enforce that only one simulation per board ID runs at a time.
 
-- We use a lock mechanism (e.g. BoardLockService) to guard each board.
+- The app use a lock mechanism (e.g. BoardLockService) to guard each board.
 
 - The AdvanceNStepsQueue serializes Advance requests per board so that concurrent HTTP calls don’t interleave or corrupt state.
 
@@ -56,7 +56,7 @@
 
 ### Validation
 
-- We built a lightweight validation approach (inline rules) rather than heavy external dependencies, as domain is simple.
+- I built a lightweight validation approach (inline rules) rather than heavy external dependencies, as domain is simple.
 
 - Example rule: AddRule(dto => dto.Grid.All(row => row != null && row.All(cell => cell == 0 || cell == 1)), "Grid must contain only 0 or 1").
 
