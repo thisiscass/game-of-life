@@ -6,11 +6,11 @@
 
 - A naive dense implementation for a grid of size r × c runs in O(r × c) per generation (you loop over each cell, check 8 neighbors — constant time).
 
-- For your fixed 20×20 design, that’s ~400 cells; the overhead is trivial. Even simulating thousands of steps is cheap at that scale.
+- For fixed 20×20 design, that’s ~400 cells; the overhead is trivial. Even simulating thousands of steps is cheap at that scale.
 
 - The larger cost is not the neighbor-check loop but cycle detection, serialization, memory overhead of storing seen states, etc.
 
-- If in the future you allow variable or large grids, a sparse or hash-based representation may be beneficial: track only live cells, compute neighbor counts only for candidate cells, skip scanning full dead zones.
+- If in the future it allow variable or large grids, a sparse or hash-based representation may be beneficial: track only live cells, compute neighbor counts only for candidate cells, skip scanning full dead zones.
 
 ## 2. Real-Time Updates with SignalR & Background Services
 
