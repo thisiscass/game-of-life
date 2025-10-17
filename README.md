@@ -17,7 +17,7 @@ This backend implements Conway’s Game of Life as a web + real-time API. Key fe
 
 The API is exposed over HTTP/HTTPS and supports both REST-like endpoints and SignalR hub endpoints. The client uses HTTP for control flows (e.g. “advance N steps”, “start”, “get next”) and subscribes to real-time updates for the “running” board via SignalR.
 
-A ```compose.yaml``` is included to run the backend (and optionally frontend) in isolated containers, with proper port bindings, so you don’t need to install .NET locally to run the system.
+A ```compose.yaml``` is included to run the backend in isolated containers, with proper port bindings, so you don’t need to install .NET locally to run the system.
 
 Please see [Architeture Decisions](./backend/Architecture.md) for an in-depth explanation.
 
