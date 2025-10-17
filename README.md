@@ -19,7 +19,7 @@ The API is exposed over HTTP/HTTPS and supports both REST-like endpoints and Sig
 
 A ```compose.yaml``` is included to run the backend (and optionally frontend) in isolated containers, with proper port bindings, so you don’t need to install .NET locally to run the system.
 
-Please see [Architeture Decisions](./backend/Architeture.md) for an in-depth explanation.
+Please see [Architeture Decisions](./backend/Architecture.md) for an in-depth explanation.
 
 ## 3. Running the Application & Tests
 
